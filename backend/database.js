@@ -51,6 +51,12 @@ const Subscription = sequelize.define('Subscription', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  deletedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+}, {
+  paranoid: false, // We'll handle soft delete manually
 });
 
 // Define Payment model to track payment history

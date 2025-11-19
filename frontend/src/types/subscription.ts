@@ -6,6 +6,7 @@ export type Subscription = {
   startDate: string;
   description?: string;
   category?: string;
+  deletedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
 };

@@ -23,15 +23,17 @@ function App() {
   const [filterBillingCycle, setFilterBillingCycle] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('name');
+  const [showDeleted, setShowDeleted] = useState(false);
 
   useEffect(() => {
     fetchSubscriptions();
-  }, []);
+  }, [showDeleted]);
 
   const fetchSubscriptions = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/subscriptions`);
+      const url = `${API_URL}/subscriptions${showDeleted ? '?includeDeleted=true' : ''}`;
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch subscriptions');
       }
@@ -241,10 +243,23 @@ function App() {
                           </select>
                         </div>
                       </div>
-                      <div>
+                      <div className="flex items-center justify-between">
                         <Button onClick={() => setShowForm(true)} disabled={isLoading}>
                           Add Subscription
                         </Button>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="showDeleted"
+                            checked={showDeleted}
+                            onChange={(e) => setShowDeleted(e.target.checked)}
+                            disabled={isLoading}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                          <Label htmlFor="showDeleted" className="cursor-pointer">
+                            Show deleted subscriptions
+                          </Label>
+                        </div>
                       </div>
                     </div>
                     {isLoading ? (

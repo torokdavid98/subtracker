@@ -38,11 +38,18 @@ export default function SubscriptionList({ subscriptions, onEdit, onDelete }: Su
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {subscriptions?.map((sub) => (
-        <Card key={sub.id} className="flex flex-col">
+        <Card key={sub.id} className={`flex flex-col ${sub.deletedAt ? 'opacity-60 border-red-300' : ''}`}>
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle>{sub.name}</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  {sub.name}
+                  {sub.deletedAt && (
+                    <span className="inline-block px-2 py-1 text-xs bg-red-100 text-red-800 rounded">
+                      Deleted
+                    </span>
+                  )}
+                </CardTitle>
                 {sub.category && (
                   <span className="inline-block mt-2 px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded">
                     {sub.category}
@@ -66,13 +73,28 @@ export default function SubscriptionList({ subscriptions, onEdit, onDelete }: Su
             <p className="text-sm text-muted-foreground">
               From: <span className="font-medium text-foreground">{formatDate(sub.startDate)}</span>
             </p>
+            {sub.deletedAt && (
+              <p className="text-sm text-red-600 mt-2">
+                Deleted: <span className="font-medium">{formatDate(sub.deletedAt)}</span>
+              </p>
+            )}
           </CardContent>
 
           <CardFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => onEdit(sub)} className="flex-1">
+            <Button
+              variant="outline"
+              onClick={() => onEdit(sub)}
+              className="flex-1"
+              disabled={!!sub.deletedAt}
+            >
               Edit
             </Button>
-            <Button variant="destructive" onClick={() => onDelete(sub.id)} className="flex-1">
+            <Button
+              variant="destructive"
+              onClick={() => onDelete(sub.id)}
+              className="flex-1"
+              disabled={!!sub.deletedAt}
+            >
               Delete
             </Button>
           </CardFooter>

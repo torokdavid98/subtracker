@@ -18,7 +18,11 @@ syncDatabase();
 // Get all subscriptions
 app.get('/api/subscriptions', async (req, res) => {
   try {
+    const includeDeleted = req.query.includeDeleted === 'true';
+    const whereClause = includeDeleted ? {} : { deletedAt: null };
+
     const subscriptions = await Subscription.findAll({
+      where: whereClause,
       order: [['createdAt', 'DESC']],
     });
     res.json(subscriptions);
@@ -144,14 +148,15 @@ app.put('/api/subscriptions/:id', async (req, res) => {
   }
 });
 
-// Delete a subscription
+// Delete a subscription (soft delete)
 app.delete('/api/subscriptions/:id', async (req, res) => {
   try {
     const subscription = await Subscription.findByPk(req.params.id);
     if (!subscription) {
       return res.status(404).json({ error: 'Subscription not found' });
     }
-    await subscription.destroy();
+    // Soft delete by setting deletedAt
+    await subscription.update({ deletedAt: new Date() });
     res.status(204).send();
   } catch (error) {
     console.error(error);
@@ -191,7 +196,10 @@ app.get('/api/payments', async (req, res) => {
 // Get subscription analytics
 app.get('/api/analytics', async (req, res) => {
   try {
-    const subscriptions = await Subscription.findAll();
+    // Only get active (non-deleted) subscriptions
+    const subscriptions = await Subscription.findAll({
+      where: { deletedAt: null }
+    });
     const payments = await Payment.findAll({
       include: [{
         model: Subscription,
@@ -265,7 +273,10 @@ app.get('/api/analytics', async (req, res) => {
 cron.schedule('0 0 1 * *', async () => {
   console.log('Running monthly payment cron job...');
   try {
-    const subscriptions = await Subscription.findAll();
+    // Only charge active (non-deleted) subscriptions
+    const subscriptions = await Subscription.findAll({
+      where: { deletedAt: null }
+    });
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();

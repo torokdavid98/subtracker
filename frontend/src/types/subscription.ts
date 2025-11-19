@@ -3,7 +3,7 @@ export type Subscription = {
   name: string;
   cost: number;
   billingCycle: 'monthly' | 'yearly';
-  nextBillDate: string;
+  startDate: string;
   description?: string;
   category?: string;
   createdAt?: string;
@@ -15,4 +15,8 @@ export type Analytics = {
   yearlyTotal: number;
   byCategory: Record<string, number>;
   totalSubscriptions: number;
+  monthlySpending: Array<{
+    month: string;
+    total: number;
+  }>;
 };

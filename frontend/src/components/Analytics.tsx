@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import type { Analytics as AnalyticsType } from '@/types/subscription';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Pie, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
+import { Pie, Bar, Line } from 'react-chartjs-2';
 import { toast } from '@/hooks/use-toast';
 
-ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
 
 const API_URL = 'http://localhost:3001/api';
 
@@ -118,6 +118,34 @@ export default function Analytics() {
     },
   };
 
+  const monthlySpendingData = {
+    labels: analytics.monthlySpending.map(item => item.month),
+    datasets: [
+      {
+        label: 'Monthly Spending',
+        data: analytics.monthlySpending.map(item => item.total),
+        borderColor: 'rgba(59, 130, 246, 1)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  };
+
+  const lineOptions = {
+    ...chartOptions,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value: number | string) {
+            return '$' + Number(value).toFixed(2);
+          },
+        },
+      },
+    },
+  };
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -148,6 +176,17 @@ export default function Analytics() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Spending - {new Date().getFullYear()}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 flex items-center justify-center">
+            <Line data={monthlySpendingData} options={lineOptions} />
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>

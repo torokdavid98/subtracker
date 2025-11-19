@@ -157,7 +157,7 @@ function App() {
         case 'cost-desc':
           return b.cost - a.cost;
         case 'date':
-          return new Date(a.nextBillDate).getTime() - new Date(b.nextBillDate).getTime();
+          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
         default:
           return 0;
       }
@@ -206,7 +206,7 @@ function App() {
                             <option value="name">Name (A-Z)</option>
                             <option value="cost-asc">Cost (Low-High)</option>
                             <option value="cost-desc">Cost (High-Low)</option>
-                            <option value="date">Next Bill Date</option>
+                            <option value="date">Start Date</option>
                           </select>
                         </div>
                         <div className="w-full sm:w-40">

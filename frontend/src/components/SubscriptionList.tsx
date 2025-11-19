@@ -64,7 +64,7 @@ export default function SubscriptionList({ subscriptions, onEdit, onDelete }: Su
 
           <CardContent className={!sub.description ? 'flex-grow' : ''}>
             <p className="text-sm text-muted-foreground">
-              Next bill: <span className="font-medium text-foreground">{formatDate(sub.nextBillDate)}</span>
+              From: <span className="font-medium text-foreground">{formatDate(sub.startDate)}</span>
             </p>
           </CardContent>
 

@@ -39,7 +39,7 @@ const Subscription = sequelize.define('Subscription', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  nextBillDate: {
+  startDate: {
     type: DataTypes.DATE,
     allowNull: false,
   },
@@ -52,6 +52,30 @@ const Subscription = sequelize.define('Subscription', {
     allowNull: true,
   },
 });
+
+// Define Payment model to track payment history
+const Payment = sequelize.define('Payment', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  subscriptionId: {
+    type: DataTypes.UUID,
+    allowNull: true,  // Allow null so we can keep payment history even after subscription is deleted
+  },
+  amount: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  paymentDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+});
+
+// Define relationships
+Payment.belongsTo(Subscription, { foreignKey: 'subscriptionId', onDelete: 'SET NULL' });
 
 // Sync database
 async function syncDatabase() {
@@ -68,5 +92,6 @@ async function syncDatabase() {
 module.exports = {
   sequelize,
   Subscription,
+  Payment,
   syncDatabase,
 };

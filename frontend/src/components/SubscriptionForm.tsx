@@ -17,8 +17,8 @@ export default function SubscriptionForm({ subscription, onSubmit, onCancel, isS
     name: subscription?.name || '',
     cost: subscription?.cost?.toString() || '',
     billingCycle: subscription?.billingCycle || 'monthly',
-    nextBillDate: subscription?.nextBillDate
-      ? new Date(subscription.nextBillDate).toISOString().split('T')[0]
+    startDate: subscription?.startDate
+      ? new Date(subscription.startDate).toISOString().split('T')[0]
       : '',
     description: subscription?.description || '',
     category: subscription?.category || '',
@@ -88,12 +88,12 @@ export default function SubscriptionForm({ subscription, onSubmit, onCancel, isS
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="nextBillDate">Next Bill Date *</Label>
+            <Label htmlFor="startDate">Start Date *</Label>
             <Input
-              id="nextBillDate"
-              name="nextBillDate"
+              id="startDate"
+              name="startDate"
               type="date"
-              value={formData.nextBillDate}
+              value={formData.startDate}
               onChange={handleChange}
               required
             />

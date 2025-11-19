@@ -3,6 +3,7 @@ import type { Analytics as AnalyticsType } from '@/types/subscription';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
+import { toast } from '@/hooks/use-toast';
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -19,11 +20,18 @@ export default function Analytics() {
   const fetchAnalytics = async () => {
     try {
       const response = await fetch(`${API_URL}/analytics`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics');
+      }
       const data = await response.json();
       setAnalytics(data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to fetch analytics. Please try again.',
+      });
       setLoading(false);
     }
   };

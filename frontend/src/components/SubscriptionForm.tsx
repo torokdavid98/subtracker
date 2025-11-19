@@ -9,9 +9,10 @@ interface SubscriptionFormProps {
   subscription?: Subscription;
   onSubmit: (data: Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
-export default function SubscriptionForm({ subscription, onSubmit, onCancel }: SubscriptionFormProps) {
+export default function SubscriptionForm({ subscription, onSubmit, onCancel, isSubmitting }: SubscriptionFormProps) {
   const [formData, setFormData] = useState({
     name: subscription?.name || '',
     cost: subscription?.cost?.toString() || '',
@@ -123,10 +124,10 @@ export default function SubscriptionForm({ subscription, onSubmit, onCancel }: S
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button type="submit">
-              {subscription ? 'Update' : 'Add'} Subscription
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : `${subscription ? 'Update' : 'Add'} Subscription`}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               Cancel
             </Button>
           </div>

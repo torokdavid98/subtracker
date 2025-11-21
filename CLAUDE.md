@@ -39,17 +39,21 @@ Frontend runs on `http://localhost:5173`
 
 ## Architecture
 
-### Backend Architecture (`backend/`)
+### Backend Architecture (`backend/src/`)
 
-**Single-file structure:** The backend uses a minimal two-file architecture for simplicity:
-- `database.js`: Sequelize instance, models (Subscription, Payment), and DB sync
-- `index.js`: Express server, all API routes, and cron job
+**Organized MVC structure:**
+- `config/database.js`: Sequelize configuration and connection
+- `models/`: Sequelize models (Subscription, Payment) with relationships
+- `controllers/`: Business logic for subscriptions, payments, analytics
+- `routes/`: Express route definitions for each resource
+- `services/`: Reusable services (payment backfilling, cron jobs)
+- `index.js`: Express app entry point
 
 **Key patterns:**
 - **Soft deletes:** Subscriptions use manual soft delete via `deletedAt` field (not Sequelize paranoid mode)
-- **Payment backfilling:** When creating/updating subscriptions, the system automatically backfills Payment records from `startDate` to current month
-- **Cron job:** Monthly payment automation runs at midnight on the 1st of each month (`0 0 1 * *`)
-- **Analytics calculation:** Real-time calculation from Payment history for monthly spending charts
+- **Payment backfilling:** When creating/updating subscriptions, `paymentService.js` automatically backfills Payment records from `startDate` to current month
+- **Cron job:** Monthly payment automation in `cronService.js` runs at midnight on the 1st of each month (`0 0 1 * *`)
+- **Analytics calculation:** Real-time calculation from Payment history for monthly spending charts in `analyticsController.js`
 
 **Models:**
 - `Subscription`: id (UUID), name, cost, billingCycle, startDate, category, description, deletedAt
@@ -59,6 +63,7 @@ Frontend runs on `http://localhost:5173`
 - Updating subscription cost/billingCycle/startDate triggers payment recalculation (deletes old payments, backfills new)
 - Deleted subscriptions retain Payment history (foreign key uses SET NULL)
 - Analytics only counts active (non-deleted) subscriptions but includes all payment history
+- All routes are mounted under `/api` prefix in main index.js
 
 ### Frontend Architecture (`frontend/src/`)
 

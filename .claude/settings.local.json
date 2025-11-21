@@ -14,7 +14,8 @@
       "mcp__shadcn__view_items_in_registries",
       "Bash(find:*)",
       "Bash(lsof:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(curl:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

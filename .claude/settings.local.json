@@ -15,7 +15,10 @@
       "Bash(find:*)",
       "Bash(lsof:*)",
       "Bash(kill:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(pkill:*)",
+      "Bash(tree:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

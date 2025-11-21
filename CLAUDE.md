@@ -103,7 +103,7 @@ Frontend runs on `http://localhost:5173`
 - `POST /api/payments` - Manual payment record (rarely used, cron handles auto-payments)
 
 **Analytics:**
-- `GET /api/analytics` - Returns monthly/yearly totals, category breakdown, monthly spending array
+- `GET /api/analytics?year=2024` - Returns monthly/yearly totals, category breakdown, monthly spending array for specified year (defaults to current year)
 
 ## Database Management
 
@@ -133,3 +133,5 @@ PORT=3001
 - The cron job only charges active (non-deleted) subscriptions
 - Frontend hardcodes API URL to `http://localhost:3001/api` (no environment variables)
 - shadcn/ui components use path aliases (@/components, @/lib, @/hooks)
+- Analytics API filters payments by year using UTC dates and Sequelize Op.between for efficient database queries
+- Year selector in Analytics component allows viewing historical spending data from different years

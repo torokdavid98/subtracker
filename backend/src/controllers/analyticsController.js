@@ -1,15 +1,29 @@
 const { Subscription, Payment } = require('../models');
+const { Op } = require('sequelize');
 
 /**
  * Get subscription analytics
  */
 async function getAnalytics(req, res) {
   try {
+    const selectedYear = req.query.year ? parseInt(req.query.year) : new Date().getFullYear();
+
     // Only get active (non-deleted) subscriptions
     const subscriptions = await Subscription.findAll({
       where: { deletedAt: null }
     });
+
+    // Fetch only payments for the selected year for better performance
+    // Use UTC dates to match database storage
+    const yearStart = new Date(Date.UTC(selectedYear, 0, 1, 0, 0, 0));
+    const yearEnd = new Date(Date.UTC(selectedYear, 11, 31, 23, 59, 59, 999));
+
     const payments = await Payment.findAll({
+      where: {
+        paymentDate: {
+          [Op.between]: [yearStart, yearEnd]
+        }
+      },
       include: [{
         model: Subscription,
         required: false, // LEFT JOIN to include payments from deleted subscriptions
@@ -42,13 +56,12 @@ async function getAnalytics(req, res) {
       return acc;
     }, {});
 
-    // Calculate actual spending per month for current year from payment history
+    // Calculate actual spending per month for selected year from payment history
     const monthlySpending = [];
-    const currentYear = new Date().getFullYear();
 
     for (let month = 0; month < 12; month++) {
-      const monthStart = new Date(currentYear, month, 1);
-      const monthEnd = new Date(currentYear, month + 1, 0, 23, 59, 59, 999);
+      const monthStart = new Date(selectedYear, month, 1);
+      const monthEnd = new Date(selectedYear, month + 1, 0, 23, 59, 59, 999);
 
       // Sum all payments in this month
       const monthTotal = payments

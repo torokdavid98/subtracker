@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Analytics as AnalyticsType } from '@/types/subscription';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { toast } from '@/hooks/use-toast';
@@ -12,14 +13,16 @@ const API_URL = 'http://localhost:3001/api';
 export default function Analytics() {
   const [analytics, setAnalytics] = useState<AnalyticsType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     fetchAnalytics();
-  }, []);
+  }, [selectedYear]);
 
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch(`${API_URL}/analytics`);
+      setLoading(true);
+      const response = await fetch(`${API_URL}/analytics?year=${selectedYear}`);
       if (!response.ok) {
         throw new Error('Failed to fetch analytics');
       }
@@ -34,6 +37,16 @@ export default function Analytics() {
       });
       setLoading(false);
     }
+  };
+
+  // Generate year options (current year and previous years)
+  const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear; year >= currentYear - 10; year--) {
+      years.push(year);
+    }
+    return years;
   };
 
   const formatCurrency = (amount: number) => {
@@ -179,7 +192,25 @@ export default function Analytics() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Monthly Spending - {new Date().getFullYear()}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Monthly Spending</CardTitle>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="year-select" className="text-sm">Year:</Label>
+              <select
+                id="year-select"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                disabled={loading}
+                className="flex h-9 w-28 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {generateYearOptions().map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="h-80 flex items-center justify-center">

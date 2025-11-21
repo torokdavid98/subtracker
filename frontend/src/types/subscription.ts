@@ -6,6 +6,7 @@ export type Subscription = {
   startDate: string;
   description?: string;
   category?: string;
+  currency: string;
   deletedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -15,6 +16,7 @@ export type Analytics = {
   monthlyTotal: number;
   yearlyTotal: number;
   byCategory: Record<string, number>;
+  byCurrency: Record<string, { monthly: number; yearly: number }>;
   totalSubscriptions: number;
   monthlySpending: Array<{
     month: string;

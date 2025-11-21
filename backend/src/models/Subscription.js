@@ -31,6 +31,11 @@ const Subscription = sequelize.define('Subscription', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  currency: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'HUF',
+  },
   deletedAt: {
     type: DataTypes.DATE,
     allowNull: true,

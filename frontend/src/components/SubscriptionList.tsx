@@ -1,6 +1,7 @@
 import type { Subscription } from '@/types/subscription';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { formatCurrency as formatCurrencyUtil } from '@/lib/currency';
 
 interface SubscriptionListProps {
   subscriptions: Subscription[];
@@ -17,11 +18,8 @@ export default function SubscriptionList({ subscriptions, onEdit, onDelete }: Su
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+  const formatCurrency = (amount: number, currency: string) => {
+    return formatCurrencyUtil(amount, currency);
   };
 
   if (subscriptions.length === 0) {
@@ -55,7 +53,7 @@ export default function SubscriptionList({ subscriptions, onEdit, onDelete }: Su
                 )}
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold">{formatCurrency(sub.cost)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(sub.cost, sub.currency || 'HUF')}</p>
                 <p className="text-xs text-muted-foreground">{sub.billingCycle}</p>
               </div>
             </div>

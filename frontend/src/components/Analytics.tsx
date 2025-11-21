@@ -6,6 +6,7 @@ import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, L
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatCurrency } from '@/lib/currency';
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
 
@@ -56,12 +57,12 @@ export default function Analytics() {
     return years;
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+  const formatAmount = (amount: number) => {
+    return amount.toFixed(2);
   };
+
+  const currencies = Object.keys(analytics?.byCurrency || {});
+  const hasMultipleCurrencies = currencies.length > 1;
 
   if (loading) {
     return <div className="text-center py-12">Loading analytics...</div>;
@@ -131,7 +132,11 @@ export default function Analytics() {
         beginAtZero: true,
         ticks: {
           callback: function(value: number | string) {
-            return '$' + Number(value).toFixed(2);
+            const amount = Number(value).toFixed(2);
+            if (currencies.length === 1) {
+              return formatCurrency(Number(value), currencies[0]);
+            }
+            return amount;
           },
         },
       },
@@ -159,7 +164,11 @@ export default function Analytics() {
         beginAtZero: true,
         ticks: {
           callback: function(value: number | string) {
-            return '$' + Number(value).toFixed(2);
+            const amount = Number(value).toFixed(2);
+            if (currencies.length === 1) {
+              return formatCurrency(Number(value), currencies[0]);
+            }
+            return amount;
           },
         },
       },
@@ -168,6 +177,16 @@ export default function Analytics() {
 
   return (
     <div className="space-y-8">
+      {hasMultipleCurrencies && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <p className="text-sm text-amber-800">
+              <strong>Note:</strong> You have subscriptions in multiple currencies. Totals are shown per currency below. Mixed currency amounts in charts are displayed as numeric values without conversion.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-3">
@@ -183,7 +202,17 @@ export default function Analytics() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Monthly Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold">{formatCurrency(analytics.monthlyTotal)}</p>
+            {currencies.length === 1 ? (
+              <p className="text-4xl font-bold">{formatCurrency(analytics.monthlyTotal, currencies[0])}</p>
+            ) : (
+              <div className="space-y-1">
+                {currencies.map(curr => (
+                  <p key={curr} className="text-2xl font-bold">
+                    {formatCurrency(analytics.byCurrency[curr].monthly, curr)}
+                  </p>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -192,7 +221,17 @@ export default function Analytics() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Yearly Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold">{formatCurrency(analytics.yearlyTotal)}</p>
+            {currencies.length === 1 ? (
+              <p className="text-4xl font-bold">{formatCurrency(analytics.yearlyTotal, currencies[0])}</p>
+            ) : (
+              <div className="space-y-1">
+                {currencies.map(curr => (
+                  <p key={curr} className="text-2xl font-bold">
+                    {formatCurrency(analytics.byCurrency[curr].yearly, curr)}
+                  </p>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -271,7 +310,7 @@ export default function Analytics() {
                     <span className="font-medium">{category}</span>
                   </div>
                   <span className="text-lg font-semibold">
-                    {formatCurrency(categoryValues[index])}
+                    {currencies.length === 1 ? formatCurrency(categoryValues[index], currencies[0]) : formatAmount(categoryValues[index])}
                     <span className="text-sm text-muted-foreground ml-1">/month</span>
                   </span>
                 </div>

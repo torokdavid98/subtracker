@@ -43,7 +43,7 @@ async function getSubscriptionById(req, res) {
  */
 async function createSubscription(req, res) {
   try {
-    const { name, cost, billingCycle, startDate, description, category } = req.body;
+    const { name, cost, billingCycle, startDate, description, category, currency } = req.body;
     const subscription = await Subscription.create({
       name,
       cost: parseFloat(cost),
@@ -51,6 +51,7 @@ async function createSubscription(req, res) {
       startDate: new Date(startDate),
       description,
       category,
+      currency: currency || 'HUF',
       userId: req.userId,
     });
 
@@ -69,7 +70,7 @@ async function createSubscription(req, res) {
  */
 async function updateSubscription(req, res) {
   try {
-    const { name, cost, billingCycle, startDate, description, category } = req.body;
+    const { name, cost, billingCycle, startDate, description, category, currency } = req.body;
     const subscription = await Subscription.findOne({
       where: { id: req.params.id, userId: req.userId }
     });
@@ -88,6 +89,7 @@ async function updateSubscription(req, res) {
       startDate: new Date(startDate),
       description,
       category,
+      currency: currency || subscription.currency || 'HUF',
     });
 
     // If cost, startDate, or billingCycle changed, recalculate payments

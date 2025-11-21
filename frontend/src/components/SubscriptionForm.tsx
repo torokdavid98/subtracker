@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CURRENCIES } from '@/lib/currency';
 
 interface SubscriptionFormProps {
   subscription?: Subscription;
@@ -22,6 +23,7 @@ export default function SubscriptionForm({ subscription, onSubmit, onCancel, isS
       : '',
     description: subscription?.description || '',
     category: subscription?.category || '',
+    currency: subscription?.currency || 'HUF',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,6 +32,7 @@ export default function SubscriptionForm({ subscription, onSubmit, onCancel, isS
       ...formData,
       cost: parseFloat(formData.cost),
       billingCycle: formData.billingCycle as 'monthly' | 'yearly',
+      currency: formData.currency,
     });
   };
 
@@ -57,19 +60,39 @@ export default function SubscriptionForm({ subscription, onSubmit, onCancel, isS
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="cost">Cost *</Label>
-            <Input
-              id="cost"
-              name="cost"
-              type="number"
-              value={formData.cost}
-              onChange={handleChange}
-              required
-              step="0.01"
-              min="0"
-              placeholder="9.99"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="cost">Cost *</Label>
+              <Input
+                id="cost"
+                name="cost"
+                type="number"
+                value={formData.cost}
+                onChange={handleChange}
+                required
+                step="0.01"
+                min="0"
+                placeholder="9.99"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency *</Label>
+              <select
+                id="currency"
+                name="currency"
+                value={formData.currency}
+                onChange={handleChange}
+                required
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {CURRENCIES.map((currency) => (
+                  <option key={currency.code} value={currency.code}>
+                    {currency.code} ({currency.symbol}) - {currency.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="space-y-2">

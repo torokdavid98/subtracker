@@ -34,14 +34,25 @@ async function getAnalytics(req, res) {
     // Calculate monthly and yearly totals from active subscriptions
     let monthlyTotal = 0;
     let yearlyTotal = 0;
+    const byCurrency = {};
 
     subscriptions.forEach(sub => {
+      const currency = sub.currency || 'HUF';
+
+      if (!byCurrency[currency]) {
+        byCurrency[currency] = { monthly: 0, yearly: 0 };
+      }
+
       if (sub.billingCycle === 'monthly') {
         monthlyTotal += sub.cost;
         yearlyTotal += sub.cost * 12;
+        byCurrency[currency].monthly += sub.cost;
+        byCurrency[currency].yearly += sub.cost * 12;
       } else if (sub.billingCycle === 'yearly') {
         monthlyTotal += sub.cost / 12;
         yearlyTotal += sub.cost;
+        byCurrency[currency].monthly += sub.cost / 12;
+        byCurrency[currency].yearly += sub.cost;
       }
     });
 
@@ -82,6 +93,7 @@ async function getAnalytics(req, res) {
       monthlyTotal,
       yearlyTotal,
       byCategory,
+      byCurrency,
       totalSubscriptions: subscriptions.length,
       monthlySpending,
     });

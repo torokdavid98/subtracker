@@ -6,6 +6,7 @@ const authRoutes = require('./authRoutes');
 const subscriptionRoutes = require('./subscriptionRoutes');
 const paymentRoutes = require('./paymentRoutes');
 const analyticsRoutes = require('./analyticsRoutes');
+const logoRoutes = require('./logo');
 
 // Public routes
 router.use('/auth', authRoutes);
@@ -14,5 +15,6 @@ router.use('/auth', authRoutes);
 router.use('/subscriptions', authMiddleware, subscriptionRoutes);
 router.use('/payments', authMiddleware, paymentRoutes);
 router.use('/analytics', authMiddleware, analyticsRoutes);
+router.use('/logo', logoRoutes);
 
 module.exports = router;

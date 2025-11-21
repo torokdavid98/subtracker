@@ -36,23 +36,38 @@ export default function SubscriptionList({ subscriptions, onEdit, onDelete }: Su
       {subscriptions?.map((sub) => (
         <Card key={sub.id} className={`flex flex-col ${sub.deletedAt ? 'opacity-60 border-red-300' : ''}`}>
           <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  {sub.name}
-                  {sub.deletedAt && (
-                    <span className="inline-block px-2 py-1 text-xs bg-red-100 text-red-800 rounded">
-                      Deleted
+            <div className="flex justify-between items-start gap-3">
+              <div className="flex items-start gap-3 flex-1">
+                {sub.logoUrl && (
+                  <div className="flex-shrink-0">
+                    <img
+                      src={sub.logoUrl}
+                      alt={`${sub.name} logo`}
+                      className="w-12 h-12 rounded-lg object-contain bg-white p-1 border"
+                      onError={(e) => {
+                        // Hide image if it fails to load
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="flex items-center gap-2 flex-wrap">
+                    <span className="truncate">{sub.name}</span>
+                    {sub.deletedAt && (
+                      <span className="inline-block px-2 py-1 text-xs bg-red-100 text-red-800 rounded flex-shrink-0">
+                        Deleted
+                      </span>
+                    )}
+                  </CardTitle>
+                  {sub.category && (
+                    <span className="inline-block mt-2 px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded">
+                      {sub.category}
                     </span>
                   )}
-                </CardTitle>
-                {sub.category && (
-                  <span className="inline-block mt-2 px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded">
-                    {sub.category}
-                  </span>
-                )}
+                </div>
               </div>
-              <div className="text-right">
+              <div className="text-right flex-shrink-0">
                 <p className="text-2xl font-bold">{formatCurrency(sub.cost, sub.currency || 'HUF')}</p>
                 <p className="text-xs text-muted-foreground">{sub.billingCycle}</p>
               </div>

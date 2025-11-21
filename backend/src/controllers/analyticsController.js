@@ -35,6 +35,7 @@ async function getAnalytics(req, res) {
     let monthlyTotal = 0;
     let yearlyTotal = 0;
     const byCurrency = {};
+    const byBillingCycle = { monthly: 0, yearly: 0 };
 
     subscriptions.forEach(sub => {
       const currency = sub.currency || 'HUF';
@@ -43,12 +44,15 @@ async function getAnalytics(req, res) {
         byCurrency[currency] = { monthly: 0, yearly: 0 };
       }
 
+      // Count subscriptions by billing cycle
       if (sub.billingCycle === 'monthly') {
+        byBillingCycle.monthly += 1;
         monthlyTotal += sub.cost;
         yearlyTotal += sub.cost * 12;
         byCurrency[currency].monthly += sub.cost;
         byCurrency[currency].yearly += sub.cost * 12;
       } else if (sub.billingCycle === 'yearly') {
+        byBillingCycle.yearly += 1;
         monthlyTotal += sub.cost / 12;
         yearlyTotal += sub.cost;
         byCurrency[currency].monthly += sub.cost / 12;
@@ -94,6 +98,7 @@ async function getAnalytics(req, res) {
       yearlyTotal,
       byCategory,
       byCurrency,
+      byBillingCycle,
       totalSubscriptions: subscriptions.length,
       monthlySpending,
     });

@@ -36,6 +36,10 @@ const Subscription = sequelize.define('Subscription', {
     allowNull: false,
     defaultValue: 'HUF',
   },
+  logoUrl: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   deletedAt: {
     type: DataTypes.DATE,
     allowNull: true,

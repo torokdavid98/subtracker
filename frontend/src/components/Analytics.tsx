@@ -102,19 +102,6 @@ export default function Analytics() {
     ],
   };
 
-  const barData = {
-    labels: ['Monthly', 'Yearly'],
-    datasets: [
-      {
-        label: 'Total Cost',
-        data: [analytics.monthlyTotal, analytics.yearlyTotal],
-        backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)'],
-        borderColor: ['rgba(59, 130, 246, 1)', 'rgba(16, 185, 129, 1)'],
-        borderWidth: 2,
-      },
-    ],
-  };
-
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: true,
@@ -125,18 +112,28 @@ export default function Analytics() {
     },
   };
 
-  const barOptions = {
+  const billingCycleData = {
+    labels: ['Monthly Subscriptions', 'Yearly Subscriptions'],
+    datasets: [
+      {
+        label: 'Number of Subscriptions',
+        data: [analytics.byBillingCycle.monthly, analytics.byBillingCycle.yearly],
+        backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)'],
+        borderColor: ['rgba(59, 130, 246, 1)', 'rgba(16, 185, 129, 1)'],
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const billingCycleOptions = {
     ...chartOptions,
     scales: {
       y: {
         beginAtZero: true,
         ticks: {
+          stepSize: 1,
           callback: function(value: number | string) {
-            const amount = Number(value).toFixed(2);
-            if (currencies.length === 1) {
-              return formatCurrency(Number(value), currencies[0]);
-            }
-            return amount;
+            return Number(value);
           },
         },
       },
@@ -283,11 +280,11 @@ export default function Analytics() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Monthly vs Yearly Costs</CardTitle>
+            <CardTitle>Subscriptions by Billing Cycle</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-80 flex items-center justify-center">
-              <Bar data={barData} options={barOptions} />
+              <Bar data={billingCycleData} options={billingCycleOptions} />
             </div>
           </CardContent>
         </Card>

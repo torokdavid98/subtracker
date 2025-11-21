@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Subscription } from '@/types/subscription';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CURRENCIES } from '@/lib/currency';
+import { useAuth } from '@/contexts/AuthContext';
+
+const API_URL = 'http://localhost:3001/api';
 
 interface SubscriptionFormProps {
   subscription?: Subscription;
@@ -14,6 +17,7 @@ interface SubscriptionFormProps {
 }
 
 export default function SubscriptionForm({ subscription, onSubmit, onCancel, isSubmitting }: SubscriptionFormProps) {
+  const { token } = useAuth();
   const [formData, setFormData] = useState({
     name: subscription?.name || '',
     cost: subscription?.cost?.toString() || '',
@@ -24,6 +28,7 @@ export default function SubscriptionForm({ subscription, onSubmit, onCancel, isS
     description: subscription?.description || '',
     category: subscription?.category || '',
     currency: subscription?.currency || 'HUF',
+    logoUrl: subscription?.logoUrl || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,13 +38,44 @@ export default function SubscriptionForm({ subscription, onSubmit, onCancel, isS
       cost: parseFloat(formData.cost),
       billingCycle: formData.billingCycle as 'monthly' | 'yearly',
       currency: formData.currency,
+      logoUrl: formData.logoUrl || null,
     });
+  };
+
+  const fetchLogo = async (serviceName: string) => {
+    if (!serviceName || serviceName.length < 3) return;
+
+    try {
+      const response = await fetch(`${API_URL}/logo/fetch?name=${encodeURIComponent(serviceName)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({ ...prev, logoUrl: data.logoUrl }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch logo:', error);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Auto-fetch logo when name changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (formData.name && !subscription) {
+        fetchLogo(formData.name);
+      }
+    }, 800); // Debounce 800ms
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.name]);
 
   return (
     <Card>

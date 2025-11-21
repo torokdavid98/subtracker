@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Subscription } from '@/types/subscription';
 import SubscriptionList from '@/components/SubscriptionList';
 import SubscriptionForm from '@/components/SubscriptionForm';
 import Analytics from '@/components/Analytics';
+import Auth from '@/components/Auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +16,7 @@ import { Label } from '@/components/ui/label';
 const API_URL = 'http://localhost:3001/api';
 
 function App() {
+  const { user, token, logout, isLoading: authLoading } = useAuth();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
@@ -25,21 +28,22 @@ function App() {
   const [sortBy, setSortBy] = useState<string>('name');
   const [showDeleted, setShowDeleted] = useState(false);
 
-  useEffect(() => {
-    fetchSubscriptions();
-  }, [showDeleted]);
-
-  const fetchSubscriptions = async () => {
+  const fetchSubscriptions = useCallback(async () => {
+    if (!token) return;
     try {
       setIsLoading(true);
       const url = `${API_URL}/subscriptions${showDeleted ? '?includeDeleted=true' : ''}`;
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch subscriptions');
       }
       const data = await response.json();
       setSubscriptions(data);
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -48,14 +52,23 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token, showDeleted]);
+
+  useEffect(() => {
+    if (user && token) {
+      fetchSubscriptions();
+    }
+  }, [user, token, fetchSubscriptions]);
 
   const handleAddSubscription = async (subscription: Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
       setIsSubmitting(true);
       const response = await fetch(`${API_URL}/subscriptions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(subscription),
       });
       if (!response.ok) {
@@ -67,7 +80,7 @@ function App() {
         title: 'Success',
         description: 'Subscription added successfully.',
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -83,7 +96,10 @@ function App() {
       setIsSubmitting(true);
       const response = await fetch(`${API_URL}/subscriptions/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(subscription),
       });
       if (!response.ok) {
@@ -96,7 +112,7 @@ function App() {
         title: 'Success',
         description: 'Subscription updated successfully.',
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -114,6 +130,9 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/subscriptions/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
       if (!response.ok) {
         throw new Error('Failed to delete subscription');
@@ -123,7 +142,7 @@ function App() {
         title: 'Success',
         description: 'Subscription deleted successfully.',
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -167,12 +186,37 @@ function App() {
 
   const uniqueCategories = Array.from(new Set(subscriptions.map(sub => sub.category).filter(Boolean)));
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-lg text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user || !token) {
+    return (
+      <>
+        <Auth />
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-3xl">Subscription Tracker</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-3xl">Subscription Tracker</CardTitle>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
+                <Button variant="outline" onClick={logout}>
+                  Logout
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="subscriptions" className="w-full">

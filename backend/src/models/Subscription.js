@@ -35,6 +35,10 @@ const Subscription = sequelize.define('Subscription', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
 }, {
   paranoid: false, // We'll handle soft delete manually
 });

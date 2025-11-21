@@ -7,7 +7,7 @@ const { backfillPayments } = require('../services/paymentService');
 async function getAllSubscriptions(req, res) {
   try {
     const includeDeleted = req.query.includeDeleted === 'true';
-    const whereClause = includeDeleted ? {} : { deletedAt: null };
+    const whereClause = includeDeleted ? { userId: req.userId } : { userId: req.userId, deletedAt: null };
 
     const subscriptions = await Subscription.findAll({
       where: whereClause,
@@ -25,7 +25,9 @@ async function getAllSubscriptions(req, res) {
  */
 async function getSubscriptionById(req, res) {
   try {
-    const subscription = await Subscription.findByPk(req.params.id);
+    const subscription = await Subscription.findOne({
+      where: { id: req.params.id, userId: req.userId }
+    });
     if (!subscription) {
       return res.status(404).json({ error: 'Subscription not found' });
     }
@@ -49,6 +51,7 @@ async function createSubscription(req, res) {
       startDate: new Date(startDate),
       description,
       category,
+      userId: req.userId,
     });
 
     // Backfill payments from startDate to current month
@@ -67,7 +70,9 @@ async function createSubscription(req, res) {
 async function updateSubscription(req, res) {
   try {
     const { name, cost, billingCycle, startDate, description, category } = req.body;
-    const subscription = await Subscription.findByPk(req.params.id);
+    const subscription = await Subscription.findOne({
+      where: { id: req.params.id, userId: req.userId }
+    });
     if (!subscription) {
       return res.status(404).json({ error: 'Subscription not found' });
     }
@@ -108,7 +113,9 @@ async function updateSubscription(req, res) {
  */
 async function deleteSubscription(req, res) {
   try {
-    const subscription = await Subscription.findByPk(req.params.id);
+    const subscription = await Subscription.findOne({
+      where: { id: req.params.id, userId: req.userId }
+    });
     if (!subscription) {
       return res.status(404).json({ error: 'Subscription not found' });
     }

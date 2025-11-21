@@ -8,9 +8,9 @@ async function getAnalytics(req, res) {
   try {
     const selectedYear = req.query.year ? parseInt(req.query.year) : new Date().getFullYear();
 
-    // Only get active (non-deleted) subscriptions
+    // Only get active (non-deleted) subscriptions for the authenticated user
     const subscriptions = await Subscription.findAll({
-      where: { deletedAt: null }
+      where: { userId: req.userId, deletedAt: null }
     });
 
     // Fetch only payments for the selected year for better performance
@@ -26,7 +26,8 @@ async function getAnalytics(req, res) {
       },
       include: [{
         model: Subscription,
-        required: false, // LEFT JOIN to include payments from deleted subscriptions
+        required: true, // INNER JOIN to only include user's subscriptions
+        where: { userId: req.userId }
       }],
     });
 

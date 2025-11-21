@@ -1,35 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Analytics as AnalyticsType } from '@/types/subscription';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
 
 const API_URL = 'http://localhost:3001/api';
 
 export default function Analytics() {
+  const { token } = useAuth();
   const [analytics, setAnalytics] = useState<AnalyticsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [selectedYear]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
+    if (!token) return;
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/analytics?year=${selectedYear}`);
+      const response = await fetch(`${API_URL}/analytics?year=${selectedYear}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch analytics');
       }
       const data = await response.json();
       setAnalytics(data);
       setLoading(false);
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -37,7 +40,11 @@ export default function Analytics() {
       });
       setLoading(false);
     }
-  };
+  }, [token, selectedYear]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   // Generate year options (current year and previous years)
   const generateYearOptions = () => {

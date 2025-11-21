@@ -24,8 +24,6 @@ export default function SubscriptionList({ subscriptions, onEdit, onDelete }: Su
     }).format(amount);
   };
 
-  console.log('Subscriptions:', subscriptions);
-
   if (subscriptions.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">

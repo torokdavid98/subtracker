@@ -112,39 +112,64 @@ export default function Analytics() {
     },
   };
 
-  const billingCycleData = {
-    labels: ['Monthly Subscriptions', 'Yearly Subscriptions'],
-    datasets: [
-      {
-        label: 'Number of Subscriptions',
-        data: [analytics.byBillingCycle.monthly, analytics.byBillingCycle.yearly],
-        backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)'],
-        borderColor: ['rgba(59, 130, 246, 1)', 'rgba(16, 185, 129, 1)'],
-        borderWidth: 2,
-      },
-    ],
+  // Generate colors for each subscription
+  const generateColors = (count: number) => {
+    const colors = [
+      'rgba(59, 130, 246, 0.8)',   // blue
+      'rgba(16, 185, 129, 0.8)',   // green
+      'rgba(245, 158, 11, 0.8)',   // orange
+      'rgba(239, 68, 68, 0.8)',    // red
+      'rgba(139, 92, 246, 0.8)',   // purple
+      'rgba(236, 72, 153, 0.8)',   // pink
+      'rgba(6, 182, 212, 0.8)',    // cyan
+      'rgba(251, 146, 60, 0.8)',   // amber
+      'rgba(132, 204, 22, 0.8)',   // lime
+      'rgba(244, 63, 94, 0.8)',    // rose
+    ];
+    return Array(count).fill(0).map((_, i) => colors[i % colors.length]);
   };
 
-  const billingCycleOptions = {
+  const stackedBarData = {
+    labels: analytics.monthlySpending.map(item => item.month),
+    datasets: analytics.spendingBySubscription.map((sub, index) => {
+      const colors = generateColors(analytics.spendingBySubscription.length);
+      return {
+        label: sub.name,
+        data: sub.data,
+        backgroundColor: colors[index],
+        borderColor: colors[index].replace('0.8', '1'),
+        borderWidth: 1,
+      };
+    }),
+  };
+
+  const stackedBarOptions = {
     ...chartOptions,
     scales: {
+      x: {
+        stacked: true,
+      },
       y: {
+        stacked: true,
         beginAtZero: true,
         ticks: {
-          stepSize: 1,
           callback: function(value: number | string) {
-            return Number(value);
+            const amount = Number(value);
+            if (currencies.length === 1) {
+              return formatCurrency(amount, currencies[0]);
+            }
+            return amount.toFixed(2);
           },
         },
       },
     },
   };
 
-  const monthlySpendingData = {
+  const monthlyLineData = {
     labels: analytics.monthlySpending.map(item => item.month),
     datasets: [
       {
-        label: 'Monthly Spending',
+        label: 'Total Monthly Spending',
         data: analytics.monthlySpending.map(item => item.total),
         borderColor: 'rgba(59, 130, 246, 1)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -161,16 +186,17 @@ export default function Analytics() {
         beginAtZero: true,
         ticks: {
           callback: function(value: number | string) {
-            const amount = Number(value).toFixed(2);
+            const amount = Number(value);
             if (currencies.length === 1) {
-              return formatCurrency(Number(value), currencies[0]);
+              return formatCurrency(amount, currencies[0]);
             }
-            return amount;
+            return amount.toFixed(2);
           },
         },
       },
     },
   };
+
 
   return (
     <div className="space-y-8">
@@ -236,7 +262,7 @@ export default function Analytics() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Monthly Spending</CardTitle>
+            <CardTitle>Monthly Spending Overview</CardTitle>
             <div className="flex items-center gap-2">
               <Label htmlFor="year-select" className="text-sm">Year:</Label>
               <select
@@ -257,12 +283,23 @@ export default function Analytics() {
         </CardHeader>
         <CardContent>
           <div className="h-80 flex items-center justify-center">
-            <Line data={monthlySpendingData} options={lineOptions} />
+            <Line data={monthlyLineData} options={lineOptions} />
           </div>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Spending by Subscription</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80 flex items-center justify-center">
+              <Bar data={stackedBarData} options={stackedBarOptions} />
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Cost Breakdown by Category</CardTitle>
@@ -275,17 +312,6 @@ export default function Analytics() {
             ) : (
               <p className="text-muted-foreground text-center py-12">No data available</p>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Subscriptions by Billing Cycle</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80 flex items-center justify-center">
-              <Bar data={billingCycleData} options={billingCycleOptions} />
-            </div>
           </CardContent>
         </Card>
       </div>

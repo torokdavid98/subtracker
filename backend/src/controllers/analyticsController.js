@@ -74,6 +74,15 @@ async function getAnalytics(req, res) {
 
     // Calculate actual spending per month for selected year from payment history
     const monthlySpending = [];
+    const monthlySpendingBySubscription = {};
+
+    // Initialize structure for each subscription
+    subscriptions.forEach(sub => {
+      monthlySpendingBySubscription[sub.id] = {
+        name: sub.name,
+        data: new Array(12).fill(0)
+      };
+    });
 
     for (let month = 0; month < 12; month++) {
       const monthStart = new Date(selectedYear, month, 1);
@@ -85,13 +94,28 @@ async function getAnalytics(req, res) {
           const paymentDate = new Date(payment.paymentDate);
           return paymentDate >= monthStart && paymentDate <= monthEnd;
         })
-        .reduce((sum, payment) => sum + payment.amount, 0);
+        .reduce((sum, payment) => {
+          // Track by subscription
+          if (payment.subscriptionId && monthlySpendingBySubscription[payment.subscriptionId]) {
+            monthlySpendingBySubscription[payment.subscriptionId].data[month] += payment.amount;
+          }
+          return sum + payment.amount;
+        }, 0);
 
       monthlySpending.push({
         month: monthStart.toLocaleDateString('en-US', { month: 'short' }),
         total: parseFloat(monthTotal.toFixed(2))
       });
     }
+
+    // Convert to array format for frontend
+    const spendingBySubscription = Object.entries(monthlySpendingBySubscription)
+      .filter(([_, data]) => data.data.some(val => val > 0)) // Only include subs with spending
+      .map(([id, data]) => ({
+        subscriptionId: id,
+        name: data.name,
+        data: data.data.map(val => parseFloat(val.toFixed(2)))
+      }));
 
     res.json({
       monthlyTotal,
@@ -101,6 +125,7 @@ async function getAnalytics(req, res) {
       byBillingCycle,
       totalSubscriptions: subscriptions.length,
       monthlySpending,
+      spendingBySubscription,
     });
   } catch (error) {
     console.error(error);

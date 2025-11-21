@@ -24,6 +24,11 @@ export type Analytics = {
     month: string;
     total: number;
   }>;
+  spendingBySubscription: Array<{
+    subscriptionId: string;
+    name: string;
+    data: number[];
+  }>;
 };
 
 export type User = {
